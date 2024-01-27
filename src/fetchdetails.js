@@ -1,72 +1,47 @@
-import { CLUSTER_NAME, COLLECTION_NAME, DATABASE_ENDPOINT, DATABASE_NAME, MONGODB_API_KEY } from "./config";
+import React, { useState, useEffect } from 'react';
+import { View, Text } from 'react-native';
 
-  const fetchDetailsFromDb = async (classNumber) => {
-	try {
-	  const response = await fetch(DATABASE_ENDPOINT, {
-		method: 'POST',
-		cache: 'no-cache',
-		headers: {
-		  'Content-Type': 'application/json',
-		  'Accept': 'application/json',
-		  'apiKey': MONGODB_API_KEY,
-		},
-		body: JSON.stringify({
-		  'dataSource': CLUSTER_NAME,
-		  'database': DATABASE_NAME,
-		  'collection': COLLECTION_NAME,
-		  'filter': {
-			'age': classNumber,
-		  },
-		}),
-	  });
-  
-	  if (!response.ok) {
-		throw new Error(`HTTP error! Status: ${response.status}`);
-	  }
-  
-	  const details = await response.json();
-	//   console.log(details);
-	  return details.document;
-	} catch (error) {
-	  console.error('Fetch failed: ', error);
-	  // Handle the error as needed (e.g., show an alert)
-	}
-  };
-  
-  const updateDetailsInDb = async (documentId, updatedData) => {
-	try {
-	  const response = await fetch(`${DATABASE_ENDPOINT}/${documentId}`, {
-		method: 'PUT', // or 'PATCH' depending on your API
-		cache: 'no-cache',
-		headers: {
-		  'Content-Type': 'application/json',
-		  'Accept': 'application/json',
-		  'apiKey': MONGODB_API_KEY,
-		},
-		body: JSON.stringify({
-		  'dataSource': CLUSTER_NAME,
-		  'database': DATABASE_NAME,
-		  'collection': COLLECTION_NAME,
-		  'documentId': '65af8a9d8ce5a12d1ef9f449',
-		  'updateData': {
-			"name":"saurav"
-		  },
-		}),
-	  });
-  
-	  if (!response.ok) {
-		throw new Error(`HTTP error! Status: ${response.status}`);
-	  }
-  
-	  const updatedDetails = await response.json();
-	  console.log(updatedDetails);
-	  return updatedDetails;
-	} catch (error) {
-	  console.error('Update failed: ', error);
-	  // Handle the error as needed (e.g., show an alert)
-	}
-  };
-  
-  export { fetchDetailsFromDb, updateDetailsInDb };
+const YourComponent = () => {
+  const [spentValues, setSpentValues] = useState([]);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('https://us-east-1.aws.data.mongodb-api.com/app/data-jxtyv/endpoint/data/v1/action/find', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            "dataSource": "Cluster0",
+            "database": "expenses",
+            "collection": "amount",
+            "query": {}
+          }),
+        });
 
+        const data = await response.json();
+
+        // Extracting only the "spent" values
+        const extractedSpentValues = data.documents.map(document => document.spent);
+        setSpentValues(extractedSpentValues);
+
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+  }, []); // Empty dependency array ensures useEffect runs only once when the component mounts
+
+  return (
+    <View>
+      <Text>Spent Values:</Text>
+      {spentValues.map((value, index) => (
+        <Text key={index}>{value}</Text>
+      ))}
+    </View>
+  );
+};
+
+export default YourComponent;
