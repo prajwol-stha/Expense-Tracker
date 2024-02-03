@@ -1,19 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState ,useEffect} from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import axios from 'axios';
 import { DATABASE_ENDPOINT, MONGODB_API_KEY } from './config';
-import fetch from './fetchdetails';
-
+import FetchDetailsFromDb from './FetchDetails'
 
 
 const App = () => {
   const [spentAmount, setSpentAmount] = useState('');
   const [remarks, setRemarks] = useState('');
+  const spent=123;
+  const [data,setData]=useState(null)
 
   const handleRefresh = () => {
     setSpentAmount('');
     setRemarks('');
-    <fetch/>
   };
   
 
@@ -24,6 +24,15 @@ const App = () => {
       ]);
       return;
     }
+  
+    // Get current date
+    const currentDate = new Date();
+    const formattedDate = currentDate.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+  
     try {
       const response = await axios.post(
         DATABASE_ENDPOINT,
@@ -34,6 +43,7 @@ const App = () => {
           document: {
             spent: parseFloat(spentAmount),
             remarks: remarks,
+            date: formattedDate, // Add the formatted date to the document
           },
         },
         {
@@ -42,9 +52,9 @@ const App = () => {
           },
         }
       );
-
+  
       if (response.status >= 200 && response.status < 300) {
-        Alert.alert('Database Updated', `Added Nrs ${parseFloat(spentAmount)} to database.`, [
+        Alert.alert('Database Updated', `Added Nrs ${parseFloat(spentAmount)} to database on ${formattedDate}.`, [
           { text: 'OK', onPress: () => console.log('OK Pressed') },
         ]);
         console.log('Expense saved successfully:', response.data);
@@ -56,6 +66,33 @@ const App = () => {
     }
   };
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const result = await FetchDetailsFromDb(spent);
+        console.log(result);
+  
+        // Check if the documents array is present in the response
+        if (result && result.documents && result.documents.length > 0) {
+          const documentData = result.documents[0]; // Assuming you want the first document
+          setData(documentData);
+        } else {
+          console.log('No documents found in the response');
+        }
+      } catch (error) {
+        console.error('fetching from db failed', error);
+        // Code to handle error in the app, display some alert, etc.
+      }
+    };
+  
+    fetchData();
+  
+    return () => {
+      console.log('clear use effect');
+      // Clean up code if needed
+    };
+  }, [spent]);
+  
   return (
     <View style={styles.container}>
       <TextInput

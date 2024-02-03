@@ -1,47 +1,42 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text } from 'react-native';
+import { CLUSTER_NAME, COLLECTION_NAME, DATABASE_ENDPOINT,DATABASE_ENDPOINT_FIND,DATABASE_NAME, MONGODB_API_KEY } from './config'
 
-const YourComponent = () => {
-  const [spentValues, setSpentValues] = useState([]);
+console.log(DATABASE_ENDPOINT)
+const FetchDetailsFromDb = async (spent) => {
+	console.log('Calling FetchDetailsFromDb with spent:', spent);
+	let response;
+	try {
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch('https://us-east-1.aws.data.mongodb-api.com/app/data-jxtyv/endpoint/data/v1/action/find', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            "dataSource": "Cluster0",
-            "database": "expenses",
-            "collection": "amount",
-            "query": {}
-          }),
-        });
+		response = await fetch(DATABASE_ENDPOINT_FIND,
+			{
+				method: 'POST',
+				cache: 'no-cache', //may break api , remove is problem occurs
+				headers: {
+					'Content-Type': 'application/json',
+					'Accept': 'application/json',
+					'apiKey': MONGODB_API_KEY
+				},
+				body: JSON.stringify({
+					'dataSource': CLUSTER_NAME,
+					'database': DATABASE_NAME,
+					'collection': COLLECTION_NAME,
+					'filter': {
+						'spent':spent
+					}
+				})
+			})
 
-        const data = await response.json();
+		if (!response.ok) {
+			throw new Error(`HTTP error! Status: ${response.status}`);
+		}
 
-        // Extracting only the "spent" values
-        const extractedSpentValues = data.documents.map(document => document.spent);
-        setSpentValues(extractedSpentValues);
+		const details = await response.json();
+		// console.log(details)
+		return (details.document)
 
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
+	} catch (error) {
+		console.error('fetch failed: ', error)
+		// Alert.alert('fetch failed', error)
+	}
+}
 
-    fetchData();
-  }, []); // Empty dependency array ensures useEffect runs only once when the component mounts
-
-  return (
-    <View>
-      <Text>Spent Values:</Text>
-      {spentValues.map((value, index) => (
-        <Text key={index}>{value}</Text>
-      ))}
-    </View>
-  );
-};
-
-export default YourComponent;
+export default FetchDetailsFromDb
