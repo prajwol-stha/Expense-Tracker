@@ -1,8 +1,9 @@
 import { CLUSTER_NAME, COLLECTION_NAME, DATABASE_ENDPOINT,DATABASE_ENDPOINT_FIND,DATABASE_NAME, MONGODB_API_KEY } from './config'
 
 console.log(DATABASE_ENDPOINT)
-const FetchDetailsFromDb = async (spent) => {
-	console.log('Calling FetchDetailsFromDb with spent:', spent);
+const FetchDetailsFromDb = async () => {
+	// console.log('Calling FetchDetailsFromDb with spent:', spent);
+	console.log('inside the fetch');
 	let response;
 	try {
 
@@ -19,9 +20,9 @@ const FetchDetailsFromDb = async (spent) => {
 					'dataSource': CLUSTER_NAME,
 					'database': DATABASE_NAME,
 					'collection': COLLECTION_NAME,
-					'filter': {
-						'spent':spent
-					}
+					// 'filter': {
+					// 	'spent':spent
+					// }
 				})
 			})
 
@@ -30,7 +31,7 @@ const FetchDetailsFromDb = async (spent) => {
 		}
 
 		const details = await response.json();
-		// console.log(details)
+		console.log(details)
 		return (details.document)
 
 	} catch (error) {

@@ -2,7 +2,7 @@ import React, { useState ,useEffect} from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import axios from 'axios';
 import { DATABASE_ENDPOINT, MONGODB_API_KEY } from './config';
-import FetchDetailsFromDb from './FetchDetails'
+import FetchDetailsFromDb from './FetchDetails';
 
 
 const App = () => {
@@ -65,33 +65,16 @@ const App = () => {
       console.error('Error saving expense:', error.message);
     }
   };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const result = await FetchDetailsFromDb(spent);
-        console.log(result);
-  
-        // Check if the documents array is present in the response
-        if (result && result.documents && result.documents.length > 0) {
-          const documentData = result.documents[0]; // Assuming you want the first document
-          setData(documentData);
-        } else {
-          console.log('No documents found in the response');
-        }
-      } catch (error) {
-        console.error('fetching from db failed', error);
-        // Code to handle error in the app, display some alert, etc.
-      }
+  async function handleStatement(){
+    console.log('handling');
+    // FetchDetailsFromDb();
+    try {
+      const details = await FetchDetailsFromDb();
+      console.log(details);
+    } catch (error) {
+      console.error('Error fetching user contributions:', error);
+    }
     };
-  
-    fetchData();
-  
-    return () => {
-      console.log('clear use effect');
-      // Clean up code if needed
-    };
-  }, [spent]);
   
   return (
     <View style={styles.container}>
@@ -114,6 +97,10 @@ const App = () => {
       </TouchableOpacity>
       <TouchableOpacity onPress={handleRefresh} style={styles.btn}>
         <Text style={styles.btnText}>Refresh</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={handleStatement} style={styles.btn}>
+        <Text style={styles.btnText}>View Statement</Text>
       </TouchableOpacity>
     </View>
   );
