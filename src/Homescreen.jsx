@@ -4,8 +4,15 @@ import axios from 'axios';
 import { DATABASE_ENDPOINT, MONGODB_API_KEY } from './config';
 import FetchDetailsFromDb from './FetchDetails';
 
+import StatementsScreen from './StatementsScreen';
 
-const App = () => {
+import {useNavigation} from '@react-navigation/native';
+
+
+
+const Homescreen = () => {
+  const navigation=useNavigation();
+
   const [spentAmount, setSpentAmount] = useState('');
   const [remarks, setRemarks] = useState('');
   const spent=123;
@@ -66,14 +73,15 @@ const App = () => {
     }
   };
   async function handleStatement(){
-    console.log('handling');
-    // FetchDetailsFromDb();
-    try {
-      const details = await FetchDetailsFromDb();
-      console.log(details);
-    } catch (error) {
-      console.error('Error fetching user contributions:', error);
-    }
+    // console.log('handling');
+    // try {
+    //   const details = await FetchDetailsFromDb();
+    //   console.log(details);
+    // } catch (error) {
+    //   console.error('Error fetching user contributions:', error);
+    // }
+      navigation.navigate('StatementsScreen');
+    
     };
   
   return (
@@ -138,6 +146,6 @@ const styles = StyleSheet.create({
   },
 });
 
-export default App;
+export default Homescreen;
 
 
