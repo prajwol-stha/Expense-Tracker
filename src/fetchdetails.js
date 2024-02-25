@@ -31,8 +31,9 @@ const FetchDetailsFromDb = async () => {
 		}
 
 		const details = await response.json();
-		console.log(details)
-		return (details.document)
+		// console.log(details)
+		return (details)
+		// return (details.document)
 
 	} catch (error) {
 		console.error('fetch failed: ', error)
