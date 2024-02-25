@@ -10,16 +10,20 @@ const StatementsScreen = () => {
     const fetchData = async () => {
       try {
         const result = await FetchDetailsFromDb('your-api-endpoint');
-        setData(result);
+        if (result) {
+          // Reverse the data before setting it in the state
+          setData({ ...result, documents: result.documents.reverse() });
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchData();
   }, []);
+  
 
   const renderHeader = () => (
     <View style={styles.headerContainer}>
@@ -47,7 +51,8 @@ const StatementsScreen = () => {
   return (
     <FlatList
       ListHeaderComponent={renderHeader}
-      data={data ? data.documents.reverse() : []} //Response from db is in ascending order, so reverse for rendering latest values first
+      // data={data ? data.documents.reverse() : []}
+      data={data ? data.documents:[]}
       renderItem={renderItem}
       keyExtractor={(item) => item._id}
     />
