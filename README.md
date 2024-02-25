@@ -1,7 +1,5 @@
 This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
 #Screenshots
-![428224181_940284617234364_3310527024265950783_n](https://github.com/prajwol-stha/Expense-Tracker/assets/140768328/e74d26fa-c537-4afd-8b3e-8375876f1ee2=720x1080)
-![428275955_762814039122772_8548974354262650360_n](https://github.com/prajwol-stha/Expense-Tracker/assets/140768328/c8f85cc0-541e-49f0-9abc-9f06e64112e0=720x1080)
 
 # Getting Started
 
