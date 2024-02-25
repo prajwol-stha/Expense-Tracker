@@ -47,10 +47,11 @@ const StatementsScreen = () => {
   return (
     <FlatList
       ListHeaderComponent={renderHeader}
-      data={data ? data.documents : []}
+      data={data ? data.documents.reverse() : []} //Response from db is in ascending order, so reverse for rendering latest values first
       renderItem={renderItem}
       keyExtractor={(item) => item._id}
     />
+
   );
 };
 
