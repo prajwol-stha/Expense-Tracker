@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import axios from 'axios';
-import NetInfo from '@react-native-community/netinfo'; // Import NetInfo
+import NetInfo from '@react-native-community/netinfo';
 import { DATABASE_ENDPOINT, MONGODB_API_KEY } from './config';
 import FetchDetailsFromDb from './FetchDetails';
 
@@ -9,12 +9,14 @@ import StatementsScreen from './StatementsScreen';
 
 import { useNavigation } from '@react-navigation/native';
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 const Homescreen = () => {
   const navigation = useNavigation();
 
   const [spentAmount, setSpentAmount] = useState('');
   const [remarks, setRemarks] = useState('');
-  const [isConnected, setIsConnected] = useState(true); // State to track internet connection status
+  const [isConnected, setIsConnected] = useState(true);
 
   const handleRefresh = () => {
     if (!isConnected) {
@@ -107,6 +109,80 @@ const Homescreen = () => {
     navigation.navigate('StatementsScreen');
   };
 
+  const handleSaveToLocalStorage = async () => {
+    console.log("Local storage");
+  
+    if (spentAmount.trim() === '' || remarks.trim() === '') {
+      Alert.alert('Saving to local storage failed', 'Please enter both spent amount and remarks.', [
+        { text: 'OK', onPress: () => console.log('OK Pressed') },
+      ]);
+      return;
+    }
+  
+    try {
+      const expenseData = {
+        spent: spentAmount,
+        remarks: remarks,
+        date: new Date().toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        }),
+      };
+  
+      // Current ID (number of keys stored) and use it as the key
+      const allKeys = await AsyncStorage.getAllKeys();
+      const currentId = allKeys.length;
+  
+      // Current ID is the key
+      await AsyncStorage.setItem(`${currentId}`, JSON.stringify(expenseData));
+      console.log('Expense data saved to local storage:', expenseData);
+    } catch (error) {
+      console.error('Error saving expense data to local storage:', error.message);
+    }
+  };
+  
+  const handleGetLocalData = async () => {
+    console.log("Local storage Fetching");
+  
+    try {
+      
+      const allKeys = await AsyncStorage.getAllKeys();
+      console.log('All keys in local storage:', allKeys);
+  
+      if (allKeys.length > 0) {
+        
+        const allData = await AsyncStorage.multiGet(allKeys);
+
+        allData.forEach(([key, value]) => {
+          try {
+            const parsedValue = JSON.parse(value);
+            console.log(`Data for key ${key}:`, parsedValue);
+          } catch (parseError) {
+            console.error(`Error parsing data for key ${key}:`, parseError.message);
+  
+            // If the value is not valid JSON
+            console.log(`Raw value for key ${key}:`, value);
+          }
+        });
+      } else {
+        console.log('No data found in local storage.');
+      }
+    } catch (error) {
+      console.error('Error fetching local data:', error.message);
+    }
+  };
+
+  const handleClearLocalStorage = async () => {
+    try {
+      await AsyncStorage.clear();
+      console.log('Local storage cleared successfully.');
+    } catch (error) {
+      console.error('Error clearing local storage:', error.message);
+    }
+  };
+
+  
   return (
     <View style={styles.container}>
       <TextInput
@@ -132,6 +208,16 @@ const Homescreen = () => {
 
       <TouchableOpacity onPress={handleStatement} style={[styles.btn, !isConnected && styles.btnOffline]}>
         <Text style={styles.btnText}>View Statement</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={handleSaveToLocalStorage} style={[styles.btn, !isConnected && styles.btnOffline]}>
+        <Text style={styles.btnText}>Save to local storage</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={handleGetLocalData} style={[styles.btn, !isConnected && styles.btnOffline]}>
+        <Text style={styles.btnText}>Get Local Data</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={handleClearLocalStorage} style={[styles.btn, !isConnected && styles.btnOffline]}>
+        <Text style={styles.btnText}>Clear Storage</Text>
       </TouchableOpacity>
     </View>
   );
