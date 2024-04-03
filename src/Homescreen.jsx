@@ -19,14 +19,6 @@ const Homescreen = () => {
   const [isConnected, setIsConnected] = useState(true);
 
   const handleRefresh = () => {
-    if (!isConnected) {
-      // Handle offline state
-      Alert.alert('No Internet Connection', 'Please connect to the internet to refresh.', [
-        { text: 'OK', onPress: () => console.log('OK Pressed') },
-      ]);
-      return;
-    }
-
     setSpentAmount('');
     setRemarks('');
   };
@@ -41,7 +33,7 @@ const Homescreen = () => {
     };
   }, []);
 
-  const saveExpense = async () => {
+  const saveExpense = async (spentAmount, remarks, date) => {
     if (!isConnected) {
       // Handle offline state
       Alert.alert('No Internet Connection', 'Please connect to the internet to save expense.', [
@@ -56,14 +48,6 @@ const Homescreen = () => {
       return;
     }
   
-    // Get current date
-    const currentDate = new Date();
-    const formattedDate = currentDate.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
-  
     try {
       const response = await axios.post(
         DATABASE_ENDPOINT,
@@ -74,7 +58,7 @@ const Homescreen = () => {
           document: {
             spent: parseFloat(spentAmount),
             remarks: remarks,
-            date: formattedDate, // Add the formatted date to the document
+            date: date, 
           },
         },
         {
@@ -85,7 +69,7 @@ const Homescreen = () => {
       );
   
       if (response.status >= 200 && response.status < 300) {
-        Alert.alert('Database Updated', `Added Nrs ${parseFloat(spentAmount)} to database on ${formattedDate}.`, [
+        Alert.alert('Database Updated', `Added Nrs ${parseFloat(spentAmount)} to database on ${date}.`, [
           { text: 'OK', onPress: () => console.log('OK Pressed') },
         ]);
         console.log('Expense saved successfully:', response.data);
@@ -99,7 +83,6 @@ const Homescreen = () => {
 
   const handleStatement = () => {
     if (!isConnected) {
-      // Handle offline state
       Alert.alert('No Internet Connection', 'Please connect to the internet to view the statement.', [
         { text: 'OK', onPress: () => console.log('OK Pressed') },
       ]);
@@ -156,11 +139,9 @@ const Homescreen = () => {
         allData.forEach(([key, value]) => {
           try {
             const parsedValue = JSON.parse(value);
-            allDataObject[key] = parsedValue; // Store data in the object
+            allDataObject[key] = parsedValue; 
           } catch (parseError) {
             console.error(`Error parsing data for key ${key}:`, parseError.message);
-  
-            // If the value is not valid JSON
             console.log(`Raw value for key ${key}:`, value);
           }
         });
@@ -184,6 +165,37 @@ const Homescreen = () => {
     }
   };
 
+  
+  const handleUpdateDatabaseOnline = async () => {
+    console.log('Uploading data to database from local storage...');
+  
+    try {
+      const allKeys = await AsyncStorage.getAllKeys();
+      console.log('All keys in local storage:', allKeys);
+  
+      if (allKeys.length > 0) {
+        const allData = await AsyncStorage.multiGet(allKeys);
+        const extractedData = []; 
+        allData.forEach(([key, value]) => {
+          try {
+            const parsedValue = JSON.parse(value);
+            const { date, remarks, spent } = parsedValue;
+            saveExpense(spent, remarks, date); 
+            extractedData.push({ date, remarks, spent });
+          } catch (parseError) {
+            console.error(`Error parsing data for key ${key}:`, parseError.message);
+          }
+        });
+  
+        console.log('Local storage data uploaded to database:', extractedData);
+        AsyncStorage.clear();
+      } else {
+        console.log('No data found in local storage.');
+      }
+    } catch (error) {
+      console.error('Error fetching local data:', error.message);
+    }
+  };
   
   return (
     <View style={styles.container}>
@@ -215,6 +227,11 @@ const Homescreen = () => {
       <TouchableOpacity onPress={handleSaveToLocalStorage} style={[styles.btn, styles.btnOffline]}>
         <Text style={styles.btnText}>Save to local storage</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity onPress={handleUpdateDatabaseOnline} style={[styles.btn]}>
+        <Text style={styles.btnText}>Update Database</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity onPress={handleGetLocalData} style={[styles.btn,styles.btnOffline]}>
         <Text style={styles.btnText}>Get Local Data</Text>
       </TouchableOpacity>
