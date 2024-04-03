@@ -33,7 +33,7 @@ const Homescreen = () => {
     };
   }, []);
 
-  const saveExpense = async (spentAmount, remarks, date) => {
+  const saveExpense1 = async () => {
     if (!isConnected) {
       // Handle offline state
       Alert.alert('No Internet Connection', 'Please connect to the internet to save expense.', [
@@ -48,6 +48,13 @@ const Homescreen = () => {
       return;
     }
   
+    const currentDate = new Date();
+    const formattedDate = currentDate.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+  
     try {
       const response = await axios.post(
         DATABASE_ENDPOINT,
@@ -58,7 +65,57 @@ const Homescreen = () => {
           document: {
             spent: parseFloat(spentAmount),
             remarks: remarks,
-            date: date, 
+            date: formattedDate, 
+          },
+        },
+        {
+          headers: {
+            'apiKey': MONGODB_API_KEY,
+          },
+        }
+      );
+  
+      if (response.status >= 200 && response.status < 300) {
+        Alert.alert('Database Updated', `Added Nrs ${parseFloat(spentAmount)} to database on ${formattedDate}.`, [
+          { text: 'OK', onPress: () => console.log('Database update successful') },
+        ]);
+        console.log('Expense saved successfully:', response.data);
+      } else {
+        console.error('Error saving expense. Unexpected status code:', response.status);
+      }
+    setSpentAmount('');
+    setRemarks('');
+    } catch (error) {
+      console.error('Error saving expense:', error.message);
+    }
+  };
+
+  const saveExpenseFromLocal= async (spentAmount, remarks, date) => {
+    if (!isConnected) {
+      // Handle offline state
+      Alert.alert('No Internet Connection', 'Please connect to the internet to save expense.', [
+        { text: 'OK', onPress: () => console.log('OK Pressed') },
+      ]);
+      return;
+    }
+    if (spentAmount.trim() === '' || remarks.trim() === '') {
+        Alert.alert('Database Update Failed', 'Please enter both spent amount and remarks.', [
+          { text: 'OK', onPress: () => console.log('OK Pressed') },
+        ]);
+        return;
+      }
+  
+    try {
+      const response = await axios.post(
+        DATABASE_ENDPOINT,
+        {
+          dataSource: 'Cluster0',
+          database: 'expenses',
+          collection: 'amount',
+          document: {
+            spent: parseFloat(spentAmount),
+            remarks: remarks,
+            date: date,
           },
         },
         {
@@ -120,6 +177,8 @@ const Homescreen = () => {
       // Current ID is the key
       await AsyncStorage.setItem(`${currentId}`, JSON.stringify(expenseData));
       console.log('Expense data saved to local storage:', expenseData);
+      setSpentAmount('');
+      setRemarks('');
     } catch (error) {
       console.error('Error saving expense data to local storage:', error.message);
     }
@@ -166,7 +225,7 @@ const Homescreen = () => {
   };
 
   
-  const handleUpdateDatabaseOnline = async () => {
+  const handleLocalToDatabase = async () => {
     console.log('Uploading data to database from local storage...');
   
     try {
@@ -180,7 +239,7 @@ const Homescreen = () => {
           try {
             const parsedValue = JSON.parse(value);
             const { date, remarks, spent } = parsedValue;
-            saveExpense(spent, remarks, date); 
+            saveExpenseFromLocal(spent, remarks, date); 
             extractedData.push({ date, remarks, spent });
           } catch (parseError) {
             console.error(`Error parsing data for key ${key}:`, parseError.message);
@@ -191,11 +250,13 @@ const Homescreen = () => {
         AsyncStorage.clear();
       } else {
         console.log('No data found in local storage.');
+        Alert.alert('Local Storage is empty.');
       }
     } catch (error) {
       console.error('Error fetching local data:', error.message);
     }
   };
+  
   
   return (
     <View style={styles.container}>
@@ -213,31 +274,38 @@ const Homescreen = () => {
         keyboardType="default"
         style={styles.input}
       />
-      <TouchableOpacity onPress={saveExpense} style={[styles.btn, !isConnected && styles.btnOffline]}>
+      {isConnected && (<>
+      <TouchableOpacity onPress={saveExpense1} style={[styles.btn, !isConnected]}>
         <Text style={styles.btnText}>Save Expense</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={handleRefresh} style={[styles.btn, !isConnected && styles.btnOffline]}>
+      <TouchableOpacity onPress={handleRefresh} style={[styles.btn, !isConnected]}>
         <Text style={styles.btnText}>Refresh</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={handleStatement} style={[styles.btn, !isConnected && styles.btnOffline]}>
+      <TouchableOpacity onPress={handleStatement} style={[styles.btn, !isConnected]}>
         <Text style={styles.btnText}>View Statement</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={handleSaveToLocalStorage} style={[styles.btn, styles.btnOffline]}>
-        <Text style={styles.btnText}>Save to local storage</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={handleUpdateDatabaseOnline} style={[styles.btn]}>
+      <TouchableOpacity onPress={handleLocalToDatabase} style={[styles.btn]}>
         <Text style={styles.btnText}>Update Database</Text>
       </TouchableOpacity>
+      </>
+      )}
+      {!isConnected && (
+  <>
+    <TouchableOpacity onPress={handleSaveToLocalStorage} style={[styles.btn, styles.btnOffline]}>
+      <Text style={styles.btnText}>Save to local storage</Text>
+    </TouchableOpacity>
 
-      <TouchableOpacity onPress={handleGetLocalData} style={[styles.btn,styles.btnOffline]}>
-        <Text style={styles.btnText}>Get Local Data</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={handleClearLocalStorage} style={[styles.btn,styles.btnOffline]}>
-        <Text style={styles.btnText}>Clear Storage</Text>
-      </TouchableOpacity>
+    <TouchableOpacity onPress={handleGetLocalData} style={[styles.btn, styles.btnOffline]}>
+      <Text style={styles.btnText}>Get Local Data</Text>
+    </TouchableOpacity>
+
+    <TouchableOpacity onPress={handleClearLocalStorage} style={[styles.btn, styles.btnOffline]}>
+      <Text style={styles.btnText}>Clear Storage</Text>
+    </TouchableOpacity>
+  </>
+)}
     </View>
   );
 };
