@@ -1,6 +1,7 @@
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import FetchDetailsFromDb from './FetchDetails';
+import { DATABASE_ENDPOINT_FIND } from './config';
 
 const StatementsScreen = () => {
   const [data, setData] = useState(null);
@@ -9,7 +10,7 @@ const StatementsScreen = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const result = await FetchDetailsFromDb('your-api-endpoint');
+        const result = await FetchDetailsFromDb(DATABASE_ENDPOINT_FIND);
         setData(result);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -46,11 +47,11 @@ const StatementsScreen = () => {
 
   return (
     <FlatList
-  ListHeaderComponent={renderHeader}
-  data={data ? data.documents.slice().reverse() : []}
-  renderItem={renderItem}
-  keyExtractor={(item) => item._id}
-/>
+      ListHeaderComponent={renderHeader}
+      data={data ? data.documents.slice().reverse() : []}
+      renderItem={renderItem}
+      keyExtractor={(item) => item._id}
+    />
 
 
   );
