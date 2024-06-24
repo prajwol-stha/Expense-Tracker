@@ -7,7 +7,7 @@ const ThemeToggle = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>{theme === 'dark' ? 'Dark Mode' : 'Light Mode'}</Text>
+      <Text style={styles.text}>{theme === 'dark' ? 'Dark Mode On' : 'Light Mode On'}</Text>
       <Switch
         value={theme === 'dark'}
         onValueChange={toggleTheme}
