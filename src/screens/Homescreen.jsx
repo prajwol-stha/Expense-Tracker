@@ -3,10 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import NetInfo from '@react-native-community/netinfo';
-import ThemeToggle from './ThemeToggle';
-import { saveExpenseToDb, handleLocalToDatabase } from './databaseOperations';
-import { handleSaveToLocalStorage, handleGetLocalData, handleClearLocalStorage } from './localStorageOperations';
-import { styles } from './styles';
+import ThemeToggle from '../components/ThemeToggle';
+import { saveExpenseToDb, handleLocalToDatabase } from '../databaseOperations';
+import { handleSaveToLocalStorage, handleGetLocalData, handleClearLocalStorage } from '../localStorageOperations';
+import { styles } from '../styles';
 
 
 
@@ -35,6 +35,13 @@ const Homescreen = () => {
     }
     navigation.navigate('StatementsScreen');
   };
+  const handleCharts = () => {
+    if (!isConnected) {
+      Alert.alert('No Internet Connection', 'Please connect to the internet to view the charts.');
+      return;
+    }
+    navigation.navigate('ChartScreen');
+  };
 
   return (
     <View style={styles.container}>
@@ -61,6 +68,9 @@ const Homescreen = () => {
           </TouchableOpacity>
           <TouchableOpacity onPress={handleStatement} style={styles.btn}>
             <Text style={styles.btnText}>View Statement</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleCharts} style={styles.btn}>
+            <Text style={styles.btnText}>View Charts</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={handleLocalToDatabase} style={styles.btn}>
             <Text style={styles.btnText}>Update Database</Text>

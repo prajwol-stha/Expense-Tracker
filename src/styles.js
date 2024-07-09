@@ -5,6 +5,7 @@ export const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     paddingHorizontal: 20,
+    backgroundColor:'#222222'
   },
   input: {
     height: 40,

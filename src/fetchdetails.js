@@ -3,7 +3,7 @@ import { CLUSTER_NAME, COLLECTION_NAME, DATABASE_ENDPOINT,DATABASE_ENDPOINT_FIND
 console.log(DATABASE_ENDPOINT)
 const FetchDetailsFromDb = async () => {
 	// console.log('Calling FetchDetailsFromDb with spent:', spent);
-	console.log('inside the fetch');
+	console.log('Fetching data...');
 	let response;
 	try {
 

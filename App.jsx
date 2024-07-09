@@ -4,9 +4,10 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import 'react-native-gesture-handler';
 import styled, { ThemeProvider as StyledThemeProvider } from 'styled-components/native';
 
-import Homescreen from './src/Homescreen';
-import StatementsScreen from './src/StatementsScreen';
-import { ThemeProvider, ThemeContext } from './src/ThemeContext';
+import Homescreen from './src/screens/Homescreen';
+import StatementsScreen from './src/screens/StatementsScreen';
+import { ThemeProvider, ThemeContext } from './src/context/ThemeContext';
+import ChartScreen from './src/screens/ChartScreen';
 
 const lightTheme = {
   background: '#ffffff',
@@ -36,6 +37,7 @@ const AppContent = () => {
           <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Homescreen" component={Homescreen} />
             <Stack.Screen name="StatementsScreen" component={StatementsScreen} />
+            <Stack.Screen name="ChartScreen" component={ChartScreen} />
           </Stack.Navigator>
         </NavigationContainer>
       </Container>
