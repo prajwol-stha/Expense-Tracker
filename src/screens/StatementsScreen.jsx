@@ -1,6 +1,8 @@
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, StyleSheet, Text, View ,ActivityIndicator} from 'react-native';
 import React, { useEffect, useState } from 'react';
-import FetchDetailsFromDb from './FetchDetails';
+import FetchDetailsFromDb from '../FetchDetails';
+import { DATABASE_ENDPOINT_FIND } from '../config';
+import COLORS from '../colors';
 
 const StatementsScreen = () => {
   const [data, setData] = useState(null);
@@ -9,7 +11,7 @@ const StatementsScreen = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const result = await FetchDetailsFromDb('your-api-endpoint');
+        const result = await FetchDetailsFromDb(DATABASE_ENDPOINT_FIND);
         setData(result);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -20,6 +22,14 @@ const StatementsScreen = () => {
 
     fetchData();
   }, []);
+
+  if (loading) {
+    return (
+    <View style={styles.loader}>
+      <ActivityIndicator  size="large" color={COLORS.PRIMARY}/>
+    </View>
+    )
+  }
 
   const renderHeader = () => (
     <View style={styles.headerContainer}>
@@ -45,13 +55,15 @@ const StatementsScreen = () => {
   );
 
   return (
+    
+    <View style={{backgroundColor:'#222222'}}>
     <FlatList
-  ListHeaderComponent={renderHeader}
-  data={data ? data.documents.slice().reverse() : []}
-  renderItem={renderItem}
-  keyExtractor={(item) => item._id}
-/>
-
+      ListHeaderComponent={renderHeader}
+      data={data ? data.documents.slice().reverse() : []}
+      renderItem={renderItem}
+      keyExtractor={(item) => item._id}
+    />
+</View>
 
   );
 };
@@ -104,6 +116,11 @@ const styles = StyleSheet.create({
   spent: {
     fontWeight: 'bold',
   },
+  loader:{
+    flex:1,
+    justifyContent:'center',
+    backgroundColor:COLORS.BACKGROUND,
+  }
 });
 
 export default StatementsScreen;

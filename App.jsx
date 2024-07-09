@@ -1,34 +1,55 @@
-import { View, Text, useColorScheme } from 'react-native';
-import React from 'react';
-
-import Homescreen from './src/Homescreen';
-import StatementsScreen from './src/StatementsScreen';
-
-import {
-  NavigationContainer,
-  useNavigation,
-  DrawerActions,
-  DefaultTheme,
-  DarkTheme,
-} from '@react-navigation/native';
+import React, { useContext } from 'react';
+import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import 'react-native-gesture-handler';
+import styled, { ThemeProvider as StyledThemeProvider } from 'styled-components/native';
+
+import Homescreen from './src/screens/Homescreen';
+import StatementsScreen from './src/screens/StatementsScreen';
+import { ThemeProvider, ThemeContext } from './src/context/ThemeContext';
+import ChartScreen from './src/screens/ChartScreen';
+
+const lightTheme = {
+  background: '#ffffff',
+  text: '#000000',
+};
+
+const darkTheme = {
+  background: '#000000',
+  text: '#ffffff',
+};
+
+const Container = styled.SafeAreaView`
+  flex: 1;
+  background-color: ${({ theme }) => theme.background};
+`;
 
 const Stack = createNativeStackNavigator();
 
-const App = () => {
-  const colorScheme = useColorScheme();
-  const isDarkTheme = colorScheme === 'dark';
-
-  const theme = isDarkTheme ? DarkTheme : DefaultTheme;
+const AppContent = () => {
+  const { theme } = useContext(ThemeContext);
+  const currentTheme = theme === 'dark' ? darkTheme : lightTheme;
 
   return (
-    <NavigationContainer theme={theme}>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Homescreen" component={Homescreen} />
-        <Stack.Screen name="StatementsScreen" component={StatementsScreen} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <StyledThemeProvider theme={currentTheme}>
+      <Container>
+        <NavigationContainer theme={theme === 'dark' ? DarkTheme : DefaultTheme}>
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="Homescreen" component={Homescreen} />
+            <Stack.Screen name="StatementsScreen" component={StatementsScreen} />
+            <Stack.Screen name="ChartScreen" component={ChartScreen} />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </Container>
+    </StyledThemeProvider>
+  );
+};
+
+const App = () => {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 };
 
